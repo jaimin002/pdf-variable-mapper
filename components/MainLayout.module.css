@@ -1,0 +1,193 @@
+ .page {
+   min-height: 100vh;
+   display: flex;
+   flex-direction: column;
+   background-color: #f3f4f6;
+   color: #111827;
+   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ }
+
+ .header {
+   padding: 12px 20px;
+   border-bottom: 1px solid #e5e7eb;
+   background-color: #ffffff;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+ }
+
+ .headerTitle {
+   font-size: 18px;
+   font-weight: 600;
+ }
+
+ .headerSubtitle {
+   font-size: 13px;
+   color: #6b7280;
+ }
+
+ .main {
+   flex: 1;
+   display: flex;
+   min-height: 0;
+ }
+
+ .sidebar {
+   width: 260px;
+   max-width: 30%;
+   border-right: 1px solid #e5e7eb;
+   background-color: #f9fafb;
+   padding: 16px;
+   display: flex;
+   flex-direction: column;
+   gap: 16px;
+ }
+
+ .canvas {
+   flex: 1;
+   padding: 16px 20px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   background-color: #ffffff;
+ }
+
+ .canvasInner {
+   width: 100%;
+   max-width: 900px;
+   height: 100%;
+   max-height: 80vh;
+   border: 1px dashed #d1d5db;
+   border-radius: 8px;
+   background: radial-gradient(circle at top, #f9fafb 0, #ffffff 55%);
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   padding: 24px;
+   text-align: center;
+   color: #6b7280;
+ }
+
+ .inspector {
+   width: 320px;
+   max-width: 35%;
+   border-left: 1px solid #e5e7eb;
+   background-color: #f9fafb;
+   padding: 16px;
+   display: flex;
+   flex-direction: column;
+   gap: 16px;
+ }
+
+ .panelTitle {
+   font-size: 14px;
+   font-weight: 600;
+   letter-spacing: 0.02em;
+   text-transform: uppercase;
+   color: #4b5563;
+ }
+
+ .panelSection {
+   margin-top: 8px;
+ }
+
+ .muted {
+   font-size: 13px;
+   color: #6b7280;
+ }
+
+ .button {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   padding: 8px 12px;
+   border-radius: 6px;
+   border: 1px solid #d1d5db;
+   background-color: #ffffff;
+   color: #111827;
+   font-size: 14px;
+   cursor: pointer;
+   transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+ }
+
+ .button:hover {
+   background-color: #f3f4f6;
+   border-color: #9ca3af;
+ }
+
+ .button:active {
+   background-color: #e5e7eb;
+   box-shadow: inset 0 0 0 1px #d1d5db;
+ }
+
+ .pageSelector {
+   width: 100%;
+   padding: 6px 10px;
+   border-radius: 6px;
+   border: 1px solid #d1d5db;
+   background-color: #ffffff;
+   font-size: 14px;
+ }
+
+ .variableList {
+   margin: 0;
+   padding: 0;
+   list-style: none;
+   border-radius: 6px;
+   border: 1px solid #e5e7eb;
+   background-color: #ffffff;
+   max-height: 240px;
+   overflow: auto;
+ }
+
+ .variableListItem {
+   padding: 8px 10px;
+   font-size: 14px;
+   border-bottom: 1px solid #f3f4f6;
+   cursor: default;
+   display: flex;
+   justify-content: space-between;
+   gap: 8px;
+ }
+
+ .variableListItem:last-child {
+   border-bottom: none;
+ }
+
+ .variableName {
+   font-weight: 500;
+ }
+
+ .variableType {
+   font-size: 12px;
+   color: #6b7280;
+ }
+
+ .inspectorField {
+   display: flex;
+   flex-direction: column;
+   gap: 4px;
+   margin-bottom: 10px;
+ }
+
+ .label {
+   font-size: 13px;
+   color: #4b5563;
+ }
+
+ .input,
+ .textarea {
+   width: 100%;
+   padding: 6px 8px;
+   border-radius: 6px;
+   border: 1px solid #d1d5db;
+   background-color: #ffffff;
+   font-size: 14px;
+   resize: vertical;
+ }
+
+ .textarea {
+   min-height: 60px;
+ }
+
