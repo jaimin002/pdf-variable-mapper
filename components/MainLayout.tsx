@@ -1,31 +1,15 @@
- "use client";
+"use client";
 
 import React from "react";
-import styles from "./MainLayout.module.css";
-import { Sidebar } from "./Sidebar";
-import { PdfCanvas } from "./PdfCanvas";
-import { VariableInspector } from "./VariableInspector";
 
-export const MainLayout: React.FC = () => {
+export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <div className={styles.headerTitle}>PDF Variable Mapper</div>
-          <div className={styles.headerSubtitle}>
-            Map template variables onto your PDFs.
-          </div>
-        </div>
-      </header>
-
-      <main className={styles.main}>
-        <Sidebar />
-        <PdfCanvas />
-        <VariableInspector />
-      </main>
+    <div style={{
+      display: "flex",
+      minHeight: "100vh",
+      backgroundColor: "#f3f4f6"
+    }}>
+      {children}
     </div>
   );
-};
-
-export default MainLayout;
-
+}

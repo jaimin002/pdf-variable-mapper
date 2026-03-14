@@ -1,5 +1,10 @@
-import MainLayout from "../components/MainLayout";
+import MainContent from "@/components/MainContent";
+import { VariableStoreProvider } from "@/components/variableStore";
 
 export default function Home() {
-  return <MainLayout />;
+  return (
+    <VariableStoreProvider>
+      <MainContent />
+    </VariableStoreProvider>
+  );
 }
