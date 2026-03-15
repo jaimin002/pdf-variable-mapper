@@ -1,24 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f1f5f9;
-  --foreground: #0f172a;
-  --surface: #ffffff;
-  --surface-elevated: #ffffff;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --accent: #0ea5e9;
-  --accent-hover: #0284c7;
-  --accent-muted: #e0f2fe;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --surface: #020617;
+  --surface-elevated: #020617;
+  --border: #1e293b;
+  --border-strong: #334155;
+  --accent: #22c55e;
+  --accent-hover: #16a34a;
+  --accent-muted: rgba(34, 197, 94, 0.12);
+  --text-primary: #e5e7eb;
+  --text-secondary: #cbd5f5;
+  --text-muted: #94a3b8;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: var(--font-geist-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  background: radial-gradient(circle at top left, #1e293b 0, #020617 55%, #000 100%);
+  font-family: var(
+    --font-geist-sans,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
