@@ -45,6 +45,12 @@ interface VariableStoreState {
   selectedVariableId?: string;
 }
 
+interface HistoryState {
+  past: VariableStoreState[];
+  present: VariableStoreState;
+  future: VariableStoreState[];
+}
+
 interface VariableStoreContext extends VariableStoreState {
   setPdfDocument: (opts: { name?: string; data: Uint8Array }) => void;
   setNumPages: (numPages: number) => void;
@@ -62,6 +68,10 @@ interface VariableStoreContext extends VariableStoreState {
   deleteVariable: (id: string) => void;
   selectVariable: (id: string | undefined) => void;
   exportTemplate: () => TemplateExport;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 const VariableStoreContext = createContext<VariableStoreContext | undefined>(
@@ -73,20 +83,62 @@ export function VariableStoreProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [state, setState] = useState<VariableStoreState>({
-    document: {
-      name: undefined,
-      fileData: null,
-      numPages: 0,
-      currentPage: 1,
+  const [history, setHistory] = useState<HistoryState>({
+    past: [],
+    present: {
+      document: {
+        name: undefined,
+        fileData: null,
+        numPages: 0,
+        currentPage: 1,
+      },
+      variables: [],
+      selectedVariableId: undefined,
     },
-    variables: [],
-    selectedVariableId: undefined,
+    future: [],
   });
+
+  const state = history.present;
+
+  const pushState = useCallback((next: VariableStoreState) => {
+    setHistory((prev) => ({
+      past: [...prev.past, prev.present],
+      present: next,
+      future: [],
+    }));
+  }, []);
+
+  const undo = useCallback(() => {
+    setHistory((prev) => {
+      if (prev.past.length === 0) return prev;
+      const previous = prev.past[prev.past.length - 1];
+      const past = prev.past.slice(0, -1);
+      return {
+        past,
+        present: previous,
+        future: [prev.present, ...prev.future],
+      };
+    });
+  }, []);
+
+  const redo = useCallback(() => {
+    setHistory((prev) => {
+      if (prev.future.length === 0) return prev;
+      const [next, ...rest] = prev.future;
+      return {
+        past: [...prev.past, prev.present],
+        present: next,
+        future: rest,
+      };
+    });
+  }, []);
+
+  const canUndo = history.past.length > 0;
+  const canRedo = history.future.length > 0;
 
   const setPdfDocument: VariableStoreContext["setPdfDocument"] = useCallback(
     ({ name, data }) => {
-      setState((prev) => ({
+      pushState({
         document: {
           name,
           fileData: data,
@@ -95,42 +147,42 @@ export function VariableStoreProvider({
         },
         variables: [],
         selectedVariableId: undefined,
-      }));
+      });
     },
-    []
+    [pushState]
   );
 
   const setNumPages: VariableStoreContext["setNumPages"] = useCallback(
     (numPages) => {
-      setState((prev) => ({
-        ...prev,
+      pushState({
+        ...state,
         document: {
-          ...prev.document,
+          ...state.document,
           numPages,
           currentPage: Math.min(
-            Math.max(prev.document.currentPage, 1),
+            Math.max(state.document.currentPage, 1),
             Math.max(numPages, 1)
           ),
         },
-      }));
+      });
     },
-    []
+    [pushState, state]
   );
 
   const setCurrentPage: VariableStoreContext["setCurrentPage"] = useCallback(
     (page) => {
-      setState((prev) => ({
-        ...prev,
+      pushState({
+        ...state,
         document: {
-          ...prev.document,
+          ...state.document,
           currentPage: Math.min(
             Math.max(page, 1),
-            Math.max(prev.document.numPages, 1)
+            Math.max(state.document.numPages, 1)
           ),
         },
-      }));
+      });
     },
-    []
+    [pushState, state]
   );
 
   const addVariableAt: VariableStoreContext["addVariableAt"] = useCallback(
@@ -142,13 +194,13 @@ export function VariableStoreProvider({
       const width = 0.18;
       const height = 0.05;
 
-      setState((prev) => ({
-        ...prev,
+      pushState({
+        ...state,
         variables: [
-          ...prev.variables,
+          ...state.variables,
           {
             id,
-            key: `var_${prev.variables.length + 1}`,
+            key: `var_${state.variables.length + 1}`,
             label: "",
             type,
             page,
@@ -159,44 +211,71 @@ export function VariableStoreProvider({
           },
         ],
         selectedVariableId: id,
-      }));
+      });
     },
-    []
+    [pushState, state]
   );
 
   const updateVariable: VariableStoreContext["updateVariable"] = useCallback(
     (id, updates) => {
-      setState((prev) => ({
-        ...prev,
-        variables: prev.variables.map((v) =>
-          v.id === id ? { ...v, ...updates } : v
-        ),
-      }));
+      const nextVariables = state.variables.map((v) =>
+        v.id === id ? { ...v, ...updates } : v
+      );
+
+      // Enforce unique keys per document when key is updated
+      if (updates.key !== undefined) {
+        const trimmed = updates.key.trim();
+        if (trimmed.length === 0) {
+          // allow empty; can be validated at export time if desired
+        } else {
+          const keyCounts = nextVariables.reduce<Record<string, number>>(
+            (acc, v) => {
+              const k = v.key.trim();
+              if (!k) return acc;
+              acc[k] = (acc[k] || 0) + 1;
+              return acc;
+            },
+            {}
+          );
+          const hasDuplicate = Object.values(keyCounts).some((c) => c > 1);
+          if (hasDuplicate) {
+            // Do not apply state change if it would introduce duplicates
+            return;
+          }
+        }
+      }
+
+      pushState({
+        ...state,
+        variables: nextVariables,
+      });
     },
-    []
+    [pushState, state]
   );
 
   const deleteVariable: VariableStoreContext["deleteVariable"] = useCallback(
     (id) => {
-      setState((prev) => {
-        const remaining = prev.variables.filter((v) => v.id !== id);
-        const selectedVariableId =
-          prev.selectedVariableId === id ? undefined : prev.selectedVariableId;
-        return {
-          ...prev,
-          variables: remaining,
-          selectedVariableId,
-        };
+      const remaining = state.variables.filter((v) => v.id !== id);
+      const selectedVariableId =
+        state.selectedVariableId === id ? undefined : state.selectedVariableId;
+      pushState({
+        ...state,
+        variables: remaining,
+        selectedVariableId,
       });
     },
-    []
+    [pushState, state]
   );
 
   const selectVariable: VariableStoreContext["selectVariable"] = useCallback(
     (id) => {
-      setState((prev) => ({
+      // Selection changes are not recorded in history; they don't affect export
+      setHistory((prev) => ({
         ...prev,
-        selectedVariableId: id,
+        present: {
+          ...prev.present,
+          selectedVariableId: id,
+        },
       }));
     },
     []
@@ -227,6 +306,10 @@ export function VariableStoreProvider({
       deleteVariable,
       selectVariable,
       exportTemplate,
+      undo,
+      redo,
+      canUndo,
+      canRedo,
     }),
     [
       state,
@@ -238,6 +321,10 @@ export function VariableStoreProvider({
       deleteVariable,
       selectVariable,
       exportTemplate,
+      undo,
+      redo,
+      canUndo,
+      canRedo,
     ]
   );
 

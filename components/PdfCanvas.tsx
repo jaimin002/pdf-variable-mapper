@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useVariableStore } from "./variableStore";
 
@@ -16,6 +16,10 @@ export default function PdfCanvas() {
     setCurrentPage,
     addVariableAt,
     selectVariable,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   } = useVariableStore();
 
   const currentPageVariables = variables.filter(
@@ -54,6 +58,15 @@ export default function PdfCanvas() {
     setCurrentPage(document.currentPage + delta);
   };
 
+  const [zoom, setZoom] = useState(1);
+
+  const handleZoom = (delta: number) => {
+    setZoom((prev) => {
+      const next = Math.min(Math.max(prev + delta, 0.5), 2);
+      return Number(next.toFixed(2));
+    });
+  };
+
   const hasPdf = !!document.fileData;
 
   const file = useMemo(() => {
@@ -68,41 +81,93 @@ export default function PdfCanvas() {
   }, [file?.url]);
 
   return (
-    <section className="flex flex-1 flex-col min-w-0 overflow-hidden bg-[var(--background)] p-6">
+    <section className="flex flex-1 flex-col min-w-0 overflow-hidden p-6">
       {/* Toolbar */}
-      <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-[var(--text-muted)]">
-          {!hasPdf
-            ? "Upload a PDF to start mapping variables."
-            : "Drag variable types onto the PDF to place fields."}
-        </p>
-        {document.numPages > 0 && (
-          <div className="flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-1 shadow-sm">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)]/80 px-4 py-3 shadow-md shadow-black/40">
+        <div className="flex items-center gap-2">
+          <div className="h-6 w-0.5 rounded-full bg-[var(--accent-muted)]" />
+          <div>
+            <p className="text-xs font-medium text-[var(--text-secondary)]">
+              {!hasPdf
+                ? "Upload a PDF to start mapping variables."
+                : "Drag variable types onto the page to place fields."}
+            </p>
+            {hasPdf && (
+              <p className="text-[11px] text-[var(--text-muted)]">
+                Click a field to edit properties in the inspector.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          {document.numPages > 0 && (
+            <div className="flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)]/90 px-1 py-1 text-xs shadow-sm shadow-black/40">
+              <button
+                type="button"
+                className="rounded-full px-2.5 py-1 font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--background)] hover:text-[var(--text-primary)] disabled:opacity-40"
+                onClick={() => handlePageChange(-1)}
+                disabled={document.currentPage <= 1}
+              >
+                ←
+              </button>
+              <span className="px-2 text-[11px] text-[var(--text-muted)]">
+                Page {document.currentPage} of {document.numPages}
+              </span>
+              <button
+                type="button"
+                className="rounded-full px-2.5 py-1 font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--background)] hover:text-[var(--text-primary)] disabled:opacity-40"
+                onClick={() => handlePageChange(1)}
+                disabled={document.currentPage >= document.numPages}
+              >
+                →
+              </button>
+            </div>
+          )}
+
+          <div className="flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)]/90 px-2 py-1 text-xs shadow-sm shadow-black/40">
             <button
               type="button"
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--background)] hover:text-[var(--text-primary)] disabled:opacity-40"
-              onClick={() => handlePageChange(-1)}
-              disabled={document.currentPage <= 1}
+              className="rounded-full px-2.5 py-1 font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--background)] hover:text-[var(--text-primary)] disabled:opacity-40"
+              onClick={undo}
+              disabled={!canUndo}
             >
-              ← Prev
+              Undo
             </button>
-            <span className="px-3 py-1.5 text-sm text-[var(--text-muted)]">
-              Page {document.currentPage} of {document.numPages}
+            <button
+              type="button"
+              className="rounded-full px-2.5 py-1 font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--background)] hover:text-[var(--text-primary)] disabled:opacity-40"
+              onClick={redo}
+              disabled={!canRedo}
+            >
+              Redo
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)]/90 px-2 py-1 text-xs shadow-sm shadow-black/40">
+            <button
+              type="button"
+              className="rounded-full px-2.5 py-1 font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--background)] hover:text-[var(--text-primary)]"
+              onClick={() => handleZoom(-0.1)}
+            >
+              −
+            </button>
+            <span className="px-1 text-[11px] text-[var(--text-muted)]">
+              {(zoom * 100).toFixed(0)}%
             </span>
             <button
               type="button"
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--background)] hover:text-[var(--text-primary)] disabled:opacity-40"
-              onClick={() => handlePageChange(1)}
-              disabled={document.currentPage >= document.numPages}
+              className="rounded-full px-2.5 py-1 font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--background)] hover:text-[var(--text-primary)]"
+              onClick={() => handleZoom(0.1)}
             >
-              Next →
+              +
             </button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Canvas Area */}
-      <div className="flex flex-1 min-h-[400px] items-center justify-center overflow-auto rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
+      <div className="flex flex-1 min-h-[420px] items-center justify-center overflow-auto rounded-2xl border border-[var(--border)] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 shadow-2xl shadow-black/60">
         {!hasPdf ? (
           <div className="flex flex-col items-center gap-4 px-8 py-12 text-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-[var(--accent-muted)] text-[var(--accent)]">
@@ -132,7 +197,7 @@ export default function PdfCanvas() {
           </div>
         ) : (
           <div
-            className="relative inline-block rounded-lg bg-[var(--background)] p-6"
+            className="relative inline-block rounded-xl bg-[var(--background)]/60 p-6 shadow-xl shadow-black/60"
             onDrop={handleDrop}
             onDragOver={handleDragOver}
           >
@@ -145,12 +210,14 @@ export default function PdfCanvas() {
                 </div>
               }
             >
-              <Page
-                pageNumber={document.currentPage}
-                width={640}
-                renderTextLayer={false}
-                renderAnnotationLayer={false}
-              />
+              <div className="flex items-center justify-center">
+                <Page
+                  pageNumber={document.currentPage}
+                  width={640 * zoom}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                />
+              </div>
             </Document>
 
             <div

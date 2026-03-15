@@ -37,13 +37,20 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="flex w-72 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--surface)]">
-      <div className="flex flex-1 flex-col gap-5 overflow-auto p-5">
+    <aside className="flex w-72 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--surface)]/80 backdrop-blur-md shadow-[1px_0_0_0_rgba(15,23,42,0.9)]">
+      <div className="flex flex-1 flex-col gap-6 overflow-auto p-5">
         {/* Upload Section */}
-        <div>
-          <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-            Upload PDF
-          </label>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                Document
+              </p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Upload the base PDF file
+              </p>
+            </div>
+          </div>
           <div className="group relative">
             <input
               type="file"
@@ -52,10 +59,10 @@ export default function Sidebar() {
               id="pdf-upload"
               onChange={handleFileChange}
             />
-            <div className="flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed border-[var(--border)] bg-[var(--background)] px-6 py-8 transition-all group-hover:border-[var(--accent)] group-hover:bg-[var(--accent-muted)]/50">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent-muted)] text-[var(--accent)] transition-colors group-hover:bg-[var(--accent)] group-hover:text-white">
+            <div className="flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed border-[var(--border)] bg-[var(--background)] px-6 py-8 transition-all group-hover:border-[var(--accent)] group-hover:bg-[var(--accent-muted)]/40">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-muted)] text-[var(--accent)] transition-colors group-hover:bg-[var(--accent)] group-hover:text-white">
                 <svg
-                  className="h-6 w-6"
+                  className="h-5 w-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -68,28 +75,35 @@ export default function Sidebar() {
                   />
                 </svg>
               </div>
-              <div className="text-center">
-                <p className="text-sm font-medium text-[var(--text-primary)]">
-                  Click or drop PDF here
-                </p>
-                <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-                  Max 50MB • .pdf only
-                </p>
-              </div>
+            <div className="text-center">
+              <p className="text-xs font-medium text-[var(--text-primary)]">
+                Click or drop PDF here
+              </p>
+              <p className="mt-0.5 text-[11px] text-[var(--text-muted)]">
+                Max 50MB • .pdf only
+              </p>
+            </div>
             </div>
           </div>
           {document.name && (
-            <p className="mt-2 truncate rounded-md bg-[var(--accent-muted)] px-2 py-1.5 text-xs font-medium text-[var(--accent)]">
+            <p className="mt-2 truncate rounded-md bg-[var(--accent-muted)]/80 px-2 py-1.5 text-[11px] font-medium text-[var(--accent)]">
               ✓ {document.name}
             </p>
           )}
         </div>
 
         {/* Variable Palette */}
-        <div>
-          <label className="mb-3 block text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-            Variable Types
-          </label>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                Variable Types
+              </p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Drag a type into the canvas
+              </p>
+            </div>
+          </div>
           <div className="flex flex-col gap-2">
             {PALETTE_ITEMS.map((item) => (
               <button
@@ -97,18 +111,18 @@ export default function Sidebar() {
                 type="button"
                 draggable
                 onDragStart={(e) => handleDragStart(e, item.type)}
-                className="flex cursor-grab items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-left transition-all hover:border-[var(--accent)] hover:bg-[var(--accent-muted)]/50 active:cursor-grabbing"
+                className="flex cursor-grab items-center gap-3 rounded-lg border border-[var(--border)]/80 bg-[var(--surface)]/80 px-4 py-3 text-left text-sm text-[var(--text-primary)] shadow-sm shadow-black/40 transition-all hover:-translate-y-[1px] hover:border-[var(--accent)] hover:bg-[var(--accent-muted)]/40 active:cursor-grabbing"
               >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[var(--background)] text-sm font-medium text-[var(--text-secondary)]">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[var(--background)] text-xs font-semibold text-[var(--text-secondary)]">
                   {item.icon}
                 </span>
-                <span className="text-sm font-medium text-[var(--text-primary)]">
+                <span className="font-medium">
                   {item.label}
                 </span>
               </button>
             ))}
           </div>
-          <p className="mt-2 text-[11px] leading-relaxed text-[var(--text-muted)]">
+          <p className="mt-1 text-[11px] leading-relaxed text-[var(--text-muted)]">
             Drag a type onto the canvas to add a variable field.
           </p>
         </div>
